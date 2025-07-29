@@ -8,6 +8,23 @@ const Index = () => {
   // Рассчитываем размер укуса для каждой булки
   const topBiteSize = Math.min(bitePercentage * 0.8, 80);
   const bottomBiteSize = Math.min(bitePercentage * 0.6, 60);
+  
+  // Создаем форму укуса - полукруглая выемка
+  const createBiteShape = (size: number, isTop: boolean) => {
+    if (size === 0) return 'none';
+    
+    if (isTop) {
+      // Для верхней булки - укус справа
+      const biteWidth = size;
+      const biteDepth = size * 0.4;
+      return `polygon(0% 0%, ${100 - biteWidth}% 0%, ${100 - biteWidth + biteDepth}% 25%, ${100 - biteWidth + biteDepth * 0.8}% 50%, ${100 - biteWidth + biteDepth}% 75%, ${100 - biteWidth}% 100%, 0% 100%)`;
+    } else {
+      // Для нижней булки - укус слева
+      const biteWidth = size;
+      const biteDepth = size * 0.4;
+      return `polygon(${biteWidth}% 0%, 100% 0%, 100% 100%, ${biteWidth}% 100%, ${biteWidth - biteDepth}% 75%, ${biteWidth - biteDepth * 0.8}% 50%, ${biteWidth - biteDepth}% 25%)`;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden">
@@ -43,27 +60,40 @@ const Index = () => {
             <div 
               className="w-80 h-20 bg-gradient-to-r from-yellow-600 to-orange-500 rounded-full relative overflow-hidden shadow-lg shadow-yellow-500/50"
               style={{
-                clipPath: topBiteSize > 0 
-                  ? `polygon(0% 0%, ${100 - topBiteSize}% 0%, ${100 - topBiteSize * 0.8}% 30%, ${100 - topBiteSize * 0.6}% 70%, ${100 - topBiteSize}% 100%, 0% 100%)`
-                  : 'none'
+                clipPath: createBiteShape(topBiteSize, true)
               }}
             >
               {/* Неоновое свечение булки */}
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/30 to-orange-400/30 animate-pulse"></div>
               
               {/* Кунжут на булке */}
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-2 h-2 bg-amber-800 rounded-full"
+              {[...Array(8)].map((_, i) => {
+                const seedLeft = 20 + (i * 8);
+                const isInBite = topBiteSize > 0 && seedLeft > (100 - topBiteSize);
+                return (
+                  <div
+                    key={i}
+                    className="absolute w-2 h-2 bg-amber-800 rounded-full"
+                    style={{
+                      left: `${seedLeft}%`,
+                      top: `${30 + (i % 2) * 20}%`,
+                      opacity: isInBite ? 0 : 1,
+                      transition: 'opacity 0.3s ease-in-out'
+                    }}
+                  ></div>
+                );
+              })}
+              
+              {/* След от укуса */}
+              {topBiteSize > 0 && (
+                <div 
+                  className="absolute right-0 top-0 h-full bg-amber-900/30 rounded-full"
                   style={{
-                    left: `${20 + (i * 8)}%`,
-                    top: `${30 + (i % 2) * 20}%`,
-                    opacity: topBiteSize > (i * 10) ? 0 : 1,
-                    transition: 'opacity 0.3s ease-in-out'
+                    width: `${topBiteSize * 0.6}%`,
+                    clipPath: `circle(50% at 80% 50%)`
                   }}
                 ></div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -97,13 +127,22 @@ const Index = () => {
             <div 
               className="w-80 h-20 bg-gradient-to-r from-yellow-700 to-orange-600 rounded-full relative overflow-hidden shadow-lg shadow-orange-500/50"
               style={{
-                clipPath: bottomBiteSize > 0 
-                  ? `polygon(0% 0%, 100% 0%, 100% 100%, ${bottomBiteSize}% 100%, ${bottomBiteSize * 0.6}% 70%, ${bottomBiteSize * 0.8}% 30%, ${bottomBiteSize}% 0%)`
-                  : 'none'
+                clipPath: createBiteShape(bottomBiteSize, false)
               }}
             >
               {/* Неоновое свечение булки */}
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/30 to-orange-400/30 animate-pulse"></div>
+              
+              {/* След от укуса */}
+              {bottomBiteSize > 0 && (
+                <div 
+                  className="absolute left-0 top-0 h-full bg-amber-900/30 rounded-full"
+                  style={{
+                    width: `${bottomBiteSize * 0.6}%`,
+                    clipPath: `circle(50% at 20% 50%)`
+                  }}
+                ></div>
+              )}
             </div>
           </div>
 
