@@ -10,9 +10,9 @@ const Index = () => {
   const bottomBiteSize = Math.min(bitePercentage * 0.6, 60);
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden">
       {/* Неоновый фон с градиентом */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-black to-pink-900/20"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-100/30 via-white to-pink-100/30"></div>
       
       {/* Неоновые частицы */}
       <div className="absolute inset-0 overflow-hidden">
