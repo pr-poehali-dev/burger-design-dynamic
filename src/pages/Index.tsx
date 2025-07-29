@@ -32,7 +32,7 @@ const Index = () => {
 
       <div className="relative z-10 flex flex-col items-center">
         {/* Заголовок */}
-        <h1 className="text-6xl font-bold mb-16 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-400 to-yellow-400 animate-neon-pulse">
+        <h1 className="text-6xl font-bold mb-16 text-gray-800">
           БУРГЕР
         </h1>
 
@@ -75,7 +75,7 @@ const Index = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value.slice(0, maxChars))}
                 placeholder="Введите ваш запрос..."
-                className="w-80 h-16 px-6 text-xl font-bold bg-gradient-to-r from-cyan-900 to-pink-900 border-4 border-cyan-400 rounded-full text-white placeholder-cyan-200 focus:outline-none focus:border-pink-400 focus:shadow-lg focus:shadow-cyan-400/50 transition-all duration-300"
+                className="w-80 h-16 px-6 text-xl font-bold bg-white border-4 border-gray-300 rounded-full text-gray-800 placeholder-gray-500 focus:outline-none focus:border-blue-400 focus:shadow-lg focus:shadow-blue-400/50 transition-all duration-300"
                 style={{
                   textShadow: '0 0 10px currentColor',
                   boxShadow: '0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(255, 0, 128, 0.1)'
@@ -87,7 +87,7 @@ const Index = () => {
             </div>
             
             {/* Счетчик символов */}
-            <div className="absolute -bottom-8 right-0 text-cyan-400 text-sm font-mono">
+            <div className="absolute -bottom-8 right-0 text-gray-600 text-sm font-mono">
               {inputValue.length}/{maxChars}
             </div>
           </div>
@@ -119,7 +119,7 @@ const Index = () => {
 
         {/* Прогресс бар поедания */}
         <div className="mt-12 w-80">
-          <div className="text-center text-cyan-400 text-lg font-bold mb-2">
+          <div className="text-center text-gray-700 text-lg font-bold mb-2">
             Прогресс поедания: {Math.round(bitePercentage)}%
           </div>
           <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden border border-cyan-400/50">
@@ -134,9 +134,9 @@ const Index = () => {
         </div>
 
         {/* Инструкция */}
-        <div className="mt-8 text-center text-cyan-300/80 text-sm max-w-md">
+        <div className="mt-8 text-center text-gray-600 text-sm max-w-md">
           <p>Введите текст в поисковую строку и наблюдайте, как бургер постепенно съедается!</p>
-          <p className="mt-2 text-pink-300/60">Максимум 50 символов = полностью съеденный бургер</p>
+          <p className="mt-2 text-gray-500">Максимум 50 символов = полностью съеденный бургер</p>
         </div>
       </div>
     </div>
