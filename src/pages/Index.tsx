@@ -33,7 +33,7 @@ const Index = () => {
       <div className="relative z-10 flex flex-col items-center">
         {/* Заголовок */}
         <h1 className="text-6xl font-bold mb-16 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-400 to-yellow-400 animate-neon-pulse">
-          FITNESS BURGER
+          БУРГЕР
         </h1>
 
         {/* Бургер контейнер */}
