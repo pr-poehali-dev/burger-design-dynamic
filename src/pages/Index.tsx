@@ -5,25 +5,93 @@ const Index = () => {
   const maxChars = 50;
   const bitePercentage = (inputValue.length / maxChars) * 100;
 
-  // Рассчитываем размер укуса для каждой булки
-  const topBiteSize = Math.min(bitePercentage * 0.8, 80);
-  const bottomBiteSize = Math.min(bitePercentage * 0.6, 60);
+  // Генерируем рандомные укусы (фиксированные на основе символов)
+  const generateBites = (text: string) => {
+    const bites = [];
+    const textHash = text.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0);
+    
+    for (let i = 0; i < text.length; i++) {
+      if (i % 8 === 0 || (i > 0 && text[i-1] === ' ')) { // Новый укус каждые 8 символов или после пробела
+        const biteHash = textHash + i;
+        const side = biteHash % 4; // 0=слева, 1=справа, 2=сверху, 3=снизу
+        const depth = 15 + (biteHash % 25); // глубина 15-40%
+        const position = 20 + (biteHash % 60); // позиция 20-80%
+        
+        bites.push({
+          side,
+          depth,
+          position,
+          startChar: i
+        });
+      }
+    }
+    return bites;
+  };
+
+  const topBites = generateBites(inputValue).filter((_, i) => i % 2 === 0);
+  const bottomBites = generateBites(inputValue).filter((_, i) => i % 2 === 1);
   
-  // Создаем форму укуса - полукруглая выемка
-  const createBiteShape = (size: number, isTop: boolean) => {
-    if (size === 0) return 'none';
+  // Создаем форму с множественными укусами и следами зубов
+  const createMultipleBitesShape = (bites: any[], isTop: boolean) => {
+    if (bites.length === 0) return 'none';
+    
+    let points = [];
     
     if (isTop) {
-      // Для верхней булки - укус справа
-      const biteWidth = size;
-      const biteDepth = size * 0.4;
-      return `polygon(0% 0%, ${100 - biteWidth}% 0%, ${100 - biteWidth + biteDepth}% 25%, ${100 - biteWidth + biteDepth * 0.8}% 50%, ${100 - biteWidth + biteDepth}% 75%, ${100 - biteWidth}% 100%, 0% 100%)`;
+      // Верхняя булка
+      points = ['0% 0%'];
+      
+      for (let x = 0; x <= 100; x += 2) {
+        let y = 0;
+        
+        // Проверяем все укусы
+        for (const bite of bites) {
+          const biteCenter = bite.position;
+          const biteWidth = bite.depth;
+          
+          if (Math.abs(x - biteCenter) < biteWidth / 2) {
+            const distFromCenter = Math.abs(x - biteCenter) / (biteWidth / 2);
+            const biteDepth = Math.sin((1 - distFromCenter) * Math.PI) * (bite.depth * 0.6);
+            
+            // Добавляем неровности от зубов
+            const toothPattern = Math.sin(x * 0.8) * 3 + Math.sin(x * 1.2) * 2;
+            y = Math.max(y, biteDepth + toothPattern);
+          }
+        }
+        
+        points.push(`${x}% ${y}%`);
+      }
+      
+      points.push('100% 0%', '100% 100%', '0% 100%');
     } else {
-      // Для нижней булки - укус слева
-      const biteWidth = size;
-      const biteDepth = size * 0.4;
-      return `polygon(${biteWidth}% 0%, 100% 0%, 100% 100%, ${biteWidth}% 100%, ${biteWidth - biteDepth}% 75%, ${biteWidth - biteDepth * 0.8}% 50%, ${biteWidth - biteDepth}% 25%)`;
+      // Нижняя булка
+      points = ['0% 0%', '100% 0%', '100% 100%'];
+      
+      for (let x = 100; x >= 0; x -= 2) {
+        let y = 100;
+        
+        // Проверяем все укусы
+        for (const bite of bites) {
+          const biteCenter = bite.position;
+          const biteWidth = bite.depth;
+          
+          if (Math.abs(x - biteCenter) < biteWidth / 2) {
+            const distFromCenter = Math.abs(x - biteCenter) / (biteWidth / 2);
+            const biteDepth = Math.sin((1 - distFromCenter) * Math.PI) * (bite.depth * 0.6);
+            
+            // Добавляем неровности от зубов
+            const toothPattern = Math.sin(x * 0.8) * 3 + Math.sin(x * 1.2) * 2;
+            y = Math.min(y, 100 - biteDepth - toothPattern);
+          }
+        }
+        
+        points.push(`${x}% ${y}%`);
+      }
+      
+      points.push('0% 100%');
     }
+    
+    return `polygon(${points.join(', ')})`;
   };
 
   return (
@@ -60,40 +128,61 @@ const Index = () => {
             <div 
               className="w-80 h-20 bg-gradient-to-r from-yellow-600 to-orange-500 rounded-full relative overflow-hidden shadow-lg shadow-yellow-500/50"
               style={{
-                clipPath: createBiteShape(topBiteSize, true)
+                clipPath: createMultipleBitesShape(topBites, true)
               }}
             >
               {/* Неоновое свечение булки */}
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/30 to-orange-400/30 animate-pulse"></div>
               
               {/* Кунжут на булке */}
-              {[...Array(8)].map((_, i) => {
-                const seedLeft = 20 + (i * 8);
-                const isInBite = topBiteSize > 0 && seedLeft > (100 - topBiteSize);
+              {[...Array(12)].map((_, i) => {
+                const seedLeft = 15 + (i * 6) + (i % 3) * 3;
+                const seedTop = 25 + (i % 4) * 12;
+                
+                // Проверяем, попадает ли кунжут в область укуса
+                const isEaten = topBites.some(bite => {
+                  const distance = Math.abs(seedLeft - bite.position);
+                  return distance < bite.depth / 2;
+                });
+                
                 return (
                   <div
                     key={i}
-                    className="absolute w-2 h-2 bg-amber-800 rounded-full"
+                    className="absolute w-2 h-2 bg-amber-800 rounded-full transition-opacity duration-300"
                     style={{
                       left: `${seedLeft}%`,
-                      top: `${30 + (i % 2) * 20}%`,
-                      opacity: isInBite ? 0 : 1,
-                      transition: 'opacity 0.3s ease-in-out'
+                      top: `${seedTop}%`,
+                      opacity: isEaten ? 0 : 1
                     }}
                   ></div>
                 );
               })}
               
-              {/* След от укуса */}
-              {topBiteSize > 0 && (
-                <div 
-                  className="absolute right-0 top-0 h-full bg-amber-900/30 rounded-full"
-                  style={{
-                    width: `${topBiteSize * 0.6}%`,
-                    clipPath: `circle(50% at 80% 50%)`
-                  }}
-                ></div>
-              )}
+              {/* Следы от зубов */}
+              {topBites.map((bite, i) => (
+                <div key={i}>
+                  {/* Основной след */}
+                  <div 
+                    className="absolute top-0 h-full bg-amber-900/20 rounded-full"
+                    style={{
+                      left: `${bite.position - bite.depth/2}%`,
+                      width: `${bite.depth}%`,
+                      clipPath: `ellipse(50% 40% at 50% 20%)`
+                    }}
+                  ></div>
+                  {/* Отдельные следы зубов */}
+                  {[...Array(4)].map((_, j) => (
+                    <div
+                      key={j}
+                      className="absolute w-1 h-3 bg-amber-900/40 rounded-full"
+                      style={{
+                        left: `${bite.position - bite.depth/4 + j * bite.depth/6}%`,
+                        top: '10%'
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -127,22 +216,37 @@ const Index = () => {
             <div 
               className="w-80 h-20 bg-gradient-to-r from-yellow-700 to-orange-600 rounded-full relative overflow-hidden shadow-lg shadow-orange-500/50"
               style={{
-                clipPath: createBiteShape(bottomBiteSize, false)
+                clipPath: createMultipleBitesShape(bottomBites, false)
               }}
             >
               {/* Неоновое свечение булки */}
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/30 to-orange-400/30 animate-pulse"></div>
               
-              {/* След от укуса */}
-              {bottomBiteSize > 0 && (
-                <div 
-                  className="absolute left-0 top-0 h-full bg-amber-900/30 rounded-full"
-                  style={{
-                    width: `${bottomBiteSize * 0.6}%`,
-                    clipPath: `circle(50% at 20% 50%)`
-                  }}
-                ></div>
-              )}
+              {/* Следы от зубов */}
+              {bottomBites.map((bite, i) => (
+                <div key={i}>
+                  {/* Основной след */}
+                  <div 
+                    className="absolute bottom-0 h-full bg-amber-900/20 rounded-full"
+                    style={{
+                      left: `${bite.position - bite.depth/2}%`,
+                      width: `${bite.depth}%`,
+                      clipPath: `ellipse(50% 40% at 50% 80%)`
+                    }}
+                  ></div>
+                  {/* Отдельные следы зубов */}
+                  {[...Array(4)].map((_, j) => (
+                    <div
+                      key={j}
+                      className="absolute w-1 h-3 bg-amber-900/40 rounded-full"
+                      style={{
+                        left: `${bite.position - bite.depth/4 + j * bite.depth/6}%`,
+                        bottom: '10%'
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
 
